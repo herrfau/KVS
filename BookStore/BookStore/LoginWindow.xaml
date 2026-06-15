@@ -1,0 +1,27 @@
+﻿<Window x:Class="BookstoreWPF.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Авторизация - ЧитайГород" Height="450" Width="350"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        Icon="Res/icon.ico">
+    <!-- Убедись, что иконка лежит в Resources -->
+    <Grid>
+        <StackPanel VerticalAlignment="Center" Margin="30">
+            <!-- Логотип и Заголовок -->
+            <Image Source="/Res/icon.png" Height="80" Margin="0,0,0,10"/>
+            <TextBlock Text="ЧитайГород" FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentColor}" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+            <!-- Поля ввода -->
+            <TextBlock Text="Логин:" Margin="5,0" FontWeight="SemiBold"/>
+            <TextBox x:Name="TxtLogin" FontSize="16"/>
+
+            <TextBlock Text="Пароль:" Margin="5,10,5,0" FontWeight="SemiBold"/>
+            <PasswordBox x:Name="PwdPassword" FontSize="16"/>
+
+            <!-- Кнопки -->
+            <Button x:Name="BtnLogin" Content="Войти" Margin="0,25,0,10" Click="BtnLogin_Click"/>
+
+            <Button x:Name="BtnGuest" Content="Войти как гость" Background="Transparent" Foreground="{StaticResource AccentColor}" BorderBrush="Transparent" Click="BtnGuest_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

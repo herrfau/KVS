@@ -1,0 +1,114 @@
+-- 1. Переключиться на master, чтобы можно было удалить БД
+USE master;
+GO
+
+-- 2. Удалить БД, если существует (принудительно, даже при активных подключениях)
+IF EXISTS (SELECT * FROM sys.databases WHERE name = 'db_bookstore')
+BEGIN
+    ALTER DATABASE db_bookstore SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE db_bookstore;
+END
+GO
+
+-- 3. Создать новую БД
+CREATE DATABASE db_bookstore;
+GO
+
+-- 4. Переключиться на новую БД
+USE db_bookstore;
+GO
+
+-- 5. Создать справочные таблицы (без внешних зависимостей)
+CREATE TABLE Category (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(25) NOT NULL
+);
+
+CREATE TABLE Producer (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(100) NOT NULL
+);
+
+CREATE TABLE Provider (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(25) NOT NULL
+);
+
+CREATE TABLE Unit (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(5) NOT NULL
+);
+
+CREATE TABLE Role (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(25) NOT NULL
+);
+
+CREATE TABLE OrderStatus (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(20) NOT NULL
+);
+
+CREATE TABLE PickUpPoint (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    PostCode NVARCHAR(6) NOT NULL,
+    City NVARCHAR(30) NOT NULL,
+    Street NVARCHAR(30) NOT NULL,
+    Building NVARCHAR(6) NOT NULL
+);
+
+-- 6. Создать таблицу User (с UNIQUE на Login — используем NVARCHAR(30), а не MAX)
+CREATE TABLE [User] (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Surname NVARCHAR(30) NOT NULL,
+    Name NVARCHAR(30) NOT NULL,
+    Patronymic NVARCHAR(30) NULL,
+    Login NVARCHAR(30) NOT NULL UNIQUE,
+    Password NVARCHAR(30) NOT NULL,
+    RoleId INT NOT NULL,
+    CONSTRAINT FK_User_Role FOREIGN KEY (RoleId) REFERENCES Role(Id)
+);
+
+-- 7. Создать таблицу Product
+CREATE TABLE Product (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Article NVARCHAR(10) NOT NULL,
+    Name NVARCHAR(MAX) NOT NULL,
+    UnitId INT NOT NULL,
+    Price MONEY NOT NULL,
+    ProviderId INT NOT NULL,
+    ProducerId INT NOT NULL,
+    CategoryId INT NOT NULL,
+    Discount DECIMAL(4,2) NULL,
+    AmountInStock DECIMAL(6,2) NOT NULL,
+    Description NVARCHAR(MAX) NULL,
+    Photo NVARCHAR(MAX) NULL,
+    CONSTRAINT FK_Product_Unit FOREIGN KEY (UnitId) REFERENCES Unit(Id),
+    CONSTRAINT FK_Product_Provider FOREIGN KEY (ProviderId) REFERENCES Provider(Id),
+    CONSTRAINT FK_Product_Producer FOREIGN KEY (ProducerId) REFERENCES Producer(Id),
+    CONSTRAINT FK_Product_Category FOREIGN KEY (CategoryId) REFERENCES Category(Id)
+);
+
+-- 8. Создать таблицу Order
+CREATE TABLE [Order] (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    CreationDate DATE NOT NULL,
+    DeliveryDate DATE NULL,
+    PickUpPointId INT NOT NULL,
+    UserId INT NOT NULL,
+    ReceiptCode NVARCHAR(4) NOT NULL,
+    StatusId INT NOT NULL,
+    CONSTRAINT FK_Order_PickUpPoint FOREIGN KEY (PickUpPointId) REFERENCES PickUpPoint(Id),
+    CONSTRAINT FK_Order_User FOREIGN KEY (UserId) REFERENCES [User](Id),
+    CONSTRAINT FK_Order_Status FOREIGN KEY (StatusId) REFERENCES OrderStatus(Id)
+);
+
+-- 9. Создать связующую таблицу ProductInOrder
+CREATE TABLE ProductInOrder (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    OrderId INT NOT NULL,
+    ProductId INT NOT NULL,
+    Amount INT NOT NULL,
+    CONSTRAINT FK_ProductInOrder_Order FOREIGN KEY (OrderId) REFERENCES [Order](Id),
+    CONSTRAINT FK_ProductInOrder_Product FOREIGN KEY (ProductId) REFERENCES Product(Id)
+);

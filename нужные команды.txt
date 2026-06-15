@@ -1,0 +1,5 @@
+-- Или выполните этот SQL-запрос
+ALTER TABLE Product
+ALTER COLUMN Name NVARCHAR(MAX);
+
+DBCC CHECKIDENT ('Product', RESEED, 0);
